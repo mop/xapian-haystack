@@ -5,6 +5,7 @@ import cPickle as pickle
 import datetime
 import os
 import shutil
+import sys
 import xapian
 
 from django.conf import settings
@@ -130,15 +131,7 @@ class XapianSearchBackendTestCase(TestCase):
         self.backend.update(self.index, self.sample_objs)
         
         self.assertEqual(self.backend.document_count(), 3)
-<<<<<<< HEAD:tests/xapian_tests/tests/xapian_backend.py
-        self.assertEqual([dict(doc) for doc in self.xapian_search('')], [
-            {'flag': u't', 'name': u'david1', 'tags': u"['a', 'b', 'c']", 'keys': u'[1, 2, 3]', 'text': u'indexed!\n1', 'sites': u"['1', '2', '3']", 'titles': u"['object one title one', 'object one title two']", 'pub_date': u'20090224000000', 'value': u'000000000005', 'month': u'02', 'id': u'tests.xapianmockmodel.1', 'slug': u'http://example.com/1/', 'url': u'http://example.com/1/', 'popularity': '\xca\x84', 'django_id': u'1', 'django_ct': u'tests.xapianmockmodel', 'empty': u''},
-            {'flag': u'f', 'name': u'david2', 'tags': u"['ab', 'bc', 'cd']", 'keys': u'[2, 4, 6]', 'text': u'indexed!\n2', 'sites': u"['2', '4', '6']", 'titles': u"['object two title one', 'object two title two']", 'pub_date': u'20090223000000', 'value': u'000000000010', 'month': u'02', 'id': u'tests.xapianmockmodel.2', 'slug': u'http://example.com/2/', 'url': u'http://example.com/2/', 'popularity': '\xb4p', 'django_id': u'2', 'django_ct': u'tests.xapianmockmodel', 'empty': u''},
-            {'flag': u't', 'name': u'david3', 'tags': u"['an', 'to', 'or']", 'keys': u'[3, 6, 9]', 'text': u'indexed!\n3', 'sites': u"['3', '6', '9']", 'titles': u"['object three title one', 'object three title two']", 'pub_date': u'20090222000000', 'value': u'000000000015', 'month': u'02', 'id': u'tests.xapianmockmodel.3', 'slug': u'http://example.com/3/', 'url': u'http://example.com/3/', 'popularity': '\xcb\x98', 'django_id': u'3', 'django_ct': u'tests.xapianmockmodel', 'empty': u''}
-        ])
-=======
         self.assertEqual([result.pk for result in self.backend.search(xapian.Query(''))['results']], [1, 2, 3])
->>>>>>> a3e90e4... Removed xapian_search method in test suite.  Is no longer required.:tests/xapian_tests/tests/xapian_backend.py
     
     def test_duplicate_update(self):
         self.backend.update(self.index, self.sample_objs)
@@ -152,14 +145,7 @@ class XapianSearchBackendTestCase(TestCase):
         
         self.backend.remove(self.sample_objs[0])
         self.assertEqual(self.backend.document_count(), 2)
-<<<<<<< HEAD:tests/xapian_tests/tests/xapian_backend.py
-        self.assertEqual([dict(doc) for doc in self.xapian_search('')], [
-            {'flag': u'f', 'name': u'david2', 'tags': u"['ab', 'bc', 'cd']", 'keys': u'[2, 4, 6]', 'text': u'indexed!\n2', 'sites': u"['2', '4', '6']", 'titles': u"['object two title one', 'object two title two']", 'pub_date': u'20090223000000', 'value': u'000000000010', 'month': u'02', 'id': u'tests.xapianmockmodel.2', 'slug': u'http://example.com/2/', 'url': u'http://example.com/2/', 'popularity': '\xb4p', 'django_id': u'2', 'django_ct': u'tests.xapianmockmodel', 'empty': u''},
-            {'flag': u't', 'name': u'david3', 'tags': u"['an', 'to', 'or']", 'keys': u'[3, 6, 9]', 'text': u'indexed!\n3', 'sites': u"['3', '6', '9']", 'titles': u"['object three title one', 'object three title two']", 'pub_date': u'20090222000000', 'value': u'000000000015', 'month': u'02', 'id': u'tests.xapianmockmodel.3', 'slug': u'http://example.com/3/', 'url': u'http://example.com/3/', 'popularity': '\xcb\x98', 'django_id': u'3', 'django_ct': u'tests.xapianmockmodel', 'empty': u''}
-        ])
-=======
         self.assertEqual([result.pk for result in self.backend.search(xapian.Query(''))['results']], [2, 3])
->>>>>>> a3e90e4... Removed xapian_search method in test suite.  Is no longer required.:tests/xapian_tests/tests/xapian_backend.py
     
     def test_clear(self):
         self.backend.update(self.index, self.sample_objs)
@@ -392,8 +378,8 @@ class XapianSearchBackendTestCase(TestCase):
 
         self.assertEqual(str(self.backend.parse_query('name:david1..david2')), 'Xapian::Query(VALUE_RANGE 0 david1 david2)')
         self.assertEqual(str(self.backend.parse_query('value:0..10')), 'Xapian::Query(VALUE_RANGE 6 000000000000 000000000010)')
-        self.assertEqual(str(self.backend.parse_query('value:..10')), 'Xapian::Query(VALUE_RANGE 6 -9223372036854775808 000000000010)')
-        self.assertEqual(str(self.backend.parse_query('value:10..*')), 'Xapian::Query(VALUE_RANGE 6 000000000010 9223372036854775807)')
+        self.assertEqual(str(self.backend.parse_query('value:..10')), 'Xapian::Query(VALUE_RANGE 6 %012d 000000000010)' % (-sys.maxint - 1))
+        self.assertEqual(str(self.backend.parse_query('value:10..*')), 'Xapian::Query(VALUE_RANGE 6 000000000010 %012d)' % sys.maxint)
         self.assertEqual(str(self.backend.parse_query('popularity:25.5..100.0')), 'Xapian::Query(VALUE_RANGE 4 \xb2` \xba@)')
 
 
